@@ -58,29 +58,22 @@ class AbstractRabobankResponse extends AbstractResponse
         if (!isset($this->data['signature'])) {
             return;
         }
-        
-        $signatureData = $this->data;
-        unset($signatureData['signature']);
-        unset($signatureData['timestamp']);
 
-        $signature = $this->request->gateway->generateSignature($this->flattenData($signatureData));
+        $signatureData = $this->getSignatureData();
+
+        $signature = $this->request->gateway->generateSignature($signatureData);
 
         if (!hash_equals($signature, $this->data['signature'])) {
             throw new InvalidSignatureException('Signature returned from server is invalid');
         }
     }
 
-    protected function flattenData(array $data)
+    protected function getSignatureData(): array
     {
-        $flattened = [];
-        foreach ($data as $value) {
-            if (is_array($value)) {
-                $flattened = array_merge($flattened, $this->flattenData($value));
-                continue;
-            }
-            $flattened[] = $value;
-        }
+        $signatureData = $this->data;
+        unset($signatureData['signature']);
+        unset($signatureData['timestamp']);
 
-        return $flattened;
+        return $signatureData;
     }
 }

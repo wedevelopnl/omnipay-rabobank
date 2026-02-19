@@ -38,4 +38,23 @@ class StatusResponse extends AbstractRabobankResponse
 
         return $orders;
     }
+
+    protected function getSignatureData(): array
+    {
+        return [
+            $this->getMoreStatusesAvailable(),
+            array_map(function (Order $order) {
+                return [
+                    $order->merchantOrderId,
+                    $order->omnikassaOrderId,
+                    $order->poiId,
+                    $order->orderStatus,
+                    $order->orderStatusDateTime,
+                    $order->errorCode,
+                    [$order->paidAmount['currency'], $order->paidAmount['amount']],
+                    [$order->totalAmount['currency'], $order->totalAmount['amount']],
+                ];
+            }, $this->getOrders()),
+        ];
+    }
 }
